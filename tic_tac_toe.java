@@ -50,9 +50,9 @@ class Board{
         for(int i = 0; i < 3; i++) {
             if(board[i][0] != ' ' && board[i][0] == board[i][1] && board[i][0] == board[i][2]) {
                 if (board[i][0] == 'x') {
-                    System.out.println("\nWinner is Player1");
+                    System.out.println("\nWinner is X");
                 } else {
-                    System.out.println("\nWinner is Player2");
+                    System.out.println("\nWinner is O");
                 }
                 return true;
             }
@@ -62,9 +62,9 @@ class Board{
         for(int i = 0; i < 3; i++) {
             if (board[0][i] != ' ' && board[0][i] == board[1][i] && board[0][i] == board[2][i]) {
                 if (board[0][i] == 'x') {
-                    System.out.println("\nWinner is Player1");
+                    System.out.println("\nWinner is X");
                 } else {
-                    System.out.println("\nWinner is Player2");
+                    System.out.println("\nWinner is O");
                 }
                 return true;
             }
@@ -73,9 +73,9 @@ class Board{
         //check diagonal1
         if (board[1][1] != ' ' && board[1][1] == board[0][0] && board[1][1] == board[2][2]) {
             if (board[1][1] == 'x') {
-                    System.out.println("\nWinner is Player1");
+                    System.out.println("\nWinner is X");
                 } else {
-                    System.out.println("\nWinner is Player2");
+                    System.out.println("\nWinner is O");
                 }
                 return true;
         }
@@ -83,9 +83,9 @@ class Board{
         //check diagonal2
         if (board[1][1] != ' ' && board[1][1] == board[2][0] && board[1][1] == board[0][2]) {
             if (board[1][1] == 'x') {
-                    System.out.println("Winner is Player1");
+                    System.out.println("Winner is X");
                 } else {
-                    System.out.println("Winner is Player2");
+                    System.out.println("Winner is O");
                 }
                 return true;
         }
@@ -93,8 +93,53 @@ class Board{
         return false;
     }
 
-    public void playGame(Scanner sc, int choice) {
+    public void playGame(Scanner sc, int opponentChoice) {
         printBoard();
+        if (opponentChoice == 1) {
+            playBot(sc);
+        } 
+        if (opponentChoice == 2) {
+            playHuman(sc);
+        }
+        System.out.println("\n1. Play again?\n2. Exit");
+        int choice = sc.nextInt();
+        if(choice == 1) {
+            System.out.println("1. Play against Bot\n2. Play against Player");
+            opponentChoice = sc.nextInt();
+            if (opponentChoice == 1) {
+                playGame(sc, opponentChoice);
+            }
+            if (opponentChoice == 2) {
+                playGame(sc, opponentChoice);
+            }
+        }
+    }
+
+    private boolean validMove(int position) {
+        if (position < 1 || position > 9) {
+            return false;
+        }
+        
+        int r = (position - 1) / 3;
+        int c = (position - 1) % 3;
+
+        return this.board[r][c] == ' ';
+    }
+
+    private boolean gameDraw() {
+        for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+                if(this.board[i][j] == ' ') {
+                    return false;
+                }
+            }
+        }
+
+        System.out.println("\nTis a Draw!");
+        return true;
+    }
+
+    private void playHuman(Scanner sc) {
         while(true) {
             while(true) {
                 System.out.print("\nEnter your choice Player1(1-9): ");
@@ -128,35 +173,46 @@ class Board{
                 break;
             }
         }
-        System.out.println("\n1. Play again?\n2. Exit");
-        choice = sc.nextInt();
-        if(choice == 1) {
-            playGame(sc, choice);
-        }
     }
 
-    private boolean validMove(int position) {
-        int r = (position - 1) / 3;
-        int c = (position - 1) % 3;
-
-        return this.board[r][c] == ' ';
-    }
-
-    private boolean gameDraw() {
-        for(int i = 0; i < 3; i++) {
-            for(int j = 0; j < 3; j++) {
-                if(this.board[i][j] == ' ') {
-                    return false;
+    private void playBot (Scanner sc) {
+        while(true) {
+            while(true) {
+                System.out.print("\nEnter your choice(1-9): ");
+                int position = sc.nextInt();
+                if(validMove(position)) {
+                    updateBoard(position, 'x');
+                    break;
+                } else {
+                    System.out.println("Invalid choice!");
                 }
             }
-        }
+        
+            if(gameOver() || gameDraw()) {
+                clearBoard();
+                return;
+            }
 
-        System.out.println("\nTis a Draw!");
-        return true;
+            Random random = new Random();
+            while(true) {
+                int computerPick = random.nextInt(1, 10);
+
+                if(validMove(computerPick)) {
+                    System.out.println("\nBot picked " + computerPick);
+                    updateBoard(computerPick, 'o');
+                    break;
+                }
+            }
+
+            if(gameOver() || gameDraw()) {
+                clearBoard();
+                return;
+            }
+        }
     }
 }
 
-class tic_tac_toe{
+class tic_tac_toe{    
     public static void main(String[] args) {
         Scanner sc = new Scanner (System.in);
 
@@ -167,7 +223,13 @@ class tic_tac_toe{
         int choice = sc.nextInt();
 
         if(choice == 1) {
-            board.playGame(sc, choice);
+            System.out.println("1. Play against Bot\n2. Play against Player");
+            int opponentChoice = sc.nextInt();
+            if (opponentChoice == 1 || opponentChoice == 2) {
+                board.playGame(sc, opponentChoice);
+            } else {
+                System.out.println("Invalid Choice");
+            }
         }
 
         System.out.println("Goodbye.");
